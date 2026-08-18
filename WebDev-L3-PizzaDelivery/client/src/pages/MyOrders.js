@@ -18,7 +18,7 @@ function MyOrders() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch(`[https://oasis-pizza.onrender.com](https://oasis-pizza.onrender.com)/api/orders/user/${user.id}`);
+      const response = await fetch(`https://oasis-pizza.onrender.com/api/orders/user/${user.id}`);
       const data = await response.json();
       setOrders(data);
       setLoading(false);

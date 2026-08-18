@@ -20,7 +20,7 @@ function AdminDashboard() {
 
   const fetchAdminOrders = async () => {
     try {
-      const response = await fetch('[https://oasis-pizza.onrender.com](https://oasis-pizza.onrender.com)/api/orders/admin/all');
+     const response = await fetch('https://oasis-pizza.onrender.com/api/orders/admin/all');
       const data = await response.json();
       setOrders(data);
       setLoading(false);
@@ -32,7 +32,7 @@ function AdminDashboard() {
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
-      const response = await fetch(`[https://oasis-pizza.onrender.com](https://oasis-pizza.onrender.com)/api/orders/admin/update-status/${orderId}`, {
+      const response = await fetch(`https://oasis-pizza.onrender.com/api/orders/admin/update-status/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })

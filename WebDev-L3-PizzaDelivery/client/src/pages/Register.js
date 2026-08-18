@@ -13,7 +13,7 @@ function Register() {
     e.preventDefault();
     try {
       // Send data to our backend
-      await axios.post('[https://oasis-pizza.onrender.com](https://oasis-pizza.onrender.com)/api/auth/register', {
+      await axios.post('https://oasis-pizza.onrender.com/api/auth/register', {
         name,
         email,
         password,

@@ -30,7 +30,7 @@ function OrderSummary() {
 
     try {
       // Backend ko order bhej rahe hain - YAHAN DATA FIX KIYA HAI 🚨
-      const response = await fetch('[https://oasis-pizza.onrender.com](https://oasis-pizza.onrender.com)/api/orders', {
+      const response = await fetch('https://oasis-pizza.onrender.com/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
