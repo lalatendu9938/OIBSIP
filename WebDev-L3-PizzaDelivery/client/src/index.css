@@ -1,0 +1,22 @@
+/* App.css */
+body {
+  background-color: #f4f7f6; /* Soft premium background */
+  color: #333;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+button {
+  transition: all 0.3s ease; /* Smooth hover effect for all buttons */
+}
+
+button:hover {
+  transform: translateY(-2px); /* Button slightly lifts up */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #ff9800 !important;
+  box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+}
