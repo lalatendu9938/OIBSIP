@@ -87,8 +87,8 @@ function OrderSummary() {
 
         // 2. Razorpay ka popup khol
         const options = {
-          key: "rzp_test_YOUR_KEY_HERE", // 🚨 IMPORTANT: YAHAN APNI RAZORPAY KEY_ID PASTE KAR 🚨
-          amount: data.amount,
+  key: "rzp_test_TRWXl9Rp2YsTZX", // <-- Yahan apni nayi Key ID daal di
+  amount: data.amount,
           currency: data.currency,
           name: "🍕 Oasis Pizza",
           description: "Premium Pizza Delivery",
