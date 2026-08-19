@@ -2,6 +2,17 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
+// Ye function Razorpay ki script ko dynamically load karega
+const loadScript = (src) => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => { resolve(true); };
+    script.onerror = () => { resolve(false); };
+    document.body.appendChild(script);
+  });
+};
+
 function OrderSummary() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -13,6 +24,35 @@ function OrderSummary() {
   const basePrice = 299;
   const toppingsPrice = (pizzaDetails?.veggies?.length || 0) * 30;
   const totalAmount = basePrice + toppingsPrice;
+
+  // Database mein order save karne ka function alag nikal liya
+  const saveOrderToDatabase = async (user) => {
+    try {
+      const response = await fetch('https://oasis-pizza.onrender.com/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          user: user.id,
+          pizzaDetails: pizzaDetails,
+          deliveryAddress: address,
+          totalAmount: totalAmount,
+          paymentMethod: paymentMethod,
+          status: 'Order Received'
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log("Backend Error:", errorData);
+        throw new Error(errorData.message || 'Failed to save order in DB');
+      }
+      return true;
+    } catch (error) {
+      console.error("DB Save Error:", error);
+      return false;
+    }
+  };
 
   const handlePayment = async () => {
     if (!address) {
@@ -28,38 +68,67 @@ function OrderSummary() {
     }
     const user = JSON.parse(storedUser);
 
-    try {
-      // Backend ko order bhej rahe hain - YAHAN DATA FIX KIYA HAI 🚨
-      const response = await fetch('https://oasis-pizza.onrender.com/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,             // Kuch backend 'userId' maangte hain
-          user: user.id,               // Kuch backend 'user' maangte hain (safey ke liye dono daal diye)
-          pizzaDetails: pizzaDetails,
-          deliveryAddress: address,
-          totalAmount: totalAmount,
-          paymentMethod: paymentMethod, // COD ya Online ka data backend ko bheja
-          status: 'Order Received'
-        })
-      });
+    if (paymentMethod === 'online') {
+      // --- RAZORPAY ONLINE PAYMENT FLOW ---
+      const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
+      if (!res) {
+        alert('Razorpay SDK failed to load. Are you offline?');
+        return;
+      }
 
-      if (response.ok) {
-        if (paymentMethod === 'online') {
-          alert('Redirecting to Payment Gateway... (Simulated) \nPayment Successful! 🎉');
-        } else {
-          alert('Order Placed Successfully via Cash on Delivery! 🎉🛵');
-        }
+      try {
+        // 1. Backend se Razorpay order ID mangwa
+        const result = await fetch('https://oasis-pizza.onrender.com/api/payment/razorpay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: totalAmount })
+        });
+        const data = await result.json();
+
+        // 2. Razorpay ka popup khol
+        const options = {
+          key: "rzp_test_YOUR_KEY_HERE", // 🚨 IMPORTANT: YAHAN APNI RAZORPAY KEY_ID PASTE KAR 🚨
+          amount: data.amount,
+          currency: data.currency,
+          name: "🍕 Oasis Pizza",
+          description: "Premium Pizza Delivery",
+          order_id: data.id,
+          handler: async function (response) {
+            // 3. Payment Success hone ke baad hi Database mein order daalenge
+            const isSaved = await saveOrderToDatabase(user);
+            if (isSaved) {
+              alert(`Payment Successful! Transaction ID: ${response.razorpay_payment_id}`);
+              navigate('/my-orders');
+            } else {
+              alert('Payment successful, but failed to save order to database.');
+            }
+          },
+          prefill: {
+            name: user.name || "Customer",
+            email: user.email || "",
+          },
+          theme: {
+            color: "#e63946", // Tera mast red color
+          },
+        };
+
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.open();
+
+      } catch (error) {
+        alert('Something went wrong opening Razorpay.');
+        console.log("Razorpay Flow Error:", error);
+      }
+
+    } else {
+      // --- CASH ON DELIVERY FLOW ---
+      const isSaved = await saveOrderToDatabase(user);
+      if (isSaved) {
+        alert('Order Placed Successfully via Cash on Delivery! 🎉🛵');
         navigate('/my-orders');
       } else {
-        // Agar fir bhi error aaye, toh backend ka exact error print karega
-        const errorData = await response.json();
-        alert(`Failed to place order: ${errorData.message || 'Unknown error'}`);
-        console.log("Backend Error:", errorData);
+        alert('Failed to place order. Check server.');
       }
-    } catch (error) {
-      alert('Something went wrong. Please check if your backend server is running.');
-      console.log("Fetch Error:", error);
     }
   };
 
@@ -184,7 +253,7 @@ function OrderSummary() {
                   onClick={() => setPaymentMethod('online')}
                   style={{ flex: 1, padding: '12px', textAlign: 'center', border: paymentMethod === 'online' ? '2px solid #e63946' : '2px solid #ddd', borderRadius: '10px', cursor: 'pointer', backgroundColor: paymentMethod === 'online' ? '#fff5f5' : 'white', fontWeight: 'bold', color: paymentMethod === 'online' ? '#e63946' : '#666', transition: 'all 0.2s' }}
                 >
-                  🌐 Pay Online
+                  🌐 Pay with RazoPay
                 </div>
                 <div 
                   onClick={() => setPaymentMethod('cod')}

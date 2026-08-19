@@ -25,7 +25,6 @@ function AdminDashboard() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
-    // Security check: Agar user admin nahi hai toh wapas bhej do
     if (!user || user.role !== 'admin') {
       navigate('/login');
       return;
@@ -54,7 +53,6 @@ function AdminDashboard() {
       });
 
       if (response.ok) {
-        // UI mein turant update dikhane ke liye
         setOrders(orders.map(order => 
           order._id === orderId ? { ...order, status: newStatus } : order
         ));
@@ -74,11 +72,11 @@ function AdminDashboard() {
 
   const getStatusColor = (status) => {
     switch(status) {
-      case 'Order Received': return '#ff9800'; // Orange
-      case 'In the Kitchen': return '#17a2b8'; // Blue
-      case 'Out for Delivery': return '#6f42c1'; // Purple
-      case 'Delivered': return '#28a745'; // Green
-      default: return '#6c757d'; // Grey
+      case 'Order Received': return '#ff9800'; 
+      case 'In the Kitchen': return '#17a2b8'; 
+      case 'Out for Delivery': return '#6f42c1'; 
+      case 'Delivered': return '#28a745'; 
+      default: return '#6c757d'; 
     }
   };
 
@@ -91,6 +89,30 @@ function AdminDashboard() {
     hidden: { opacity: 0, scale: 0.95 },
     visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } }
   };
+
+  // --- ANALYTICS CALCULATIONS ---
+  const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+  const totalOrders = orders.length;
+  
+  const statusCounts = {
+    'Order Received': orders.filter(o => o.status === 'Order Received').length,
+    'In the Kitchen': orders.filter(o => o.status === 'In the Kitchen').length,
+    'Out for Delivery': orders.filter(o => o.status === 'Out for Delivery').length,
+    'Delivered': orders.filter(o => o.status === 'Delivered').length,
+  };
+
+  // NATIVE CSS DOUGHNUT CHART LOGIC (Zero Dependencies)
+  const safeTotal = totalOrders === 0 ? 1 : totalOrders;
+  const p1 = (statusCounts['Order Received'] / safeTotal) * 100;
+  const p2 = p1 + ((statusCounts['In the Kitchen'] / safeTotal) * 100);
+  const p3 = p2 + ((statusCounts['Out for Delivery'] / safeTotal) * 100);
+  
+  const conicGradient = `conic-gradient(
+    #ff9800 0% ${p1}%, 
+    #17a2b8 ${p1}% ${p2}%, 
+    #6f42c1 ${p2}% ${p3}%, 
+    #28a745 ${p3}% 100%
+  )`;
 
   return (
     <>
@@ -114,10 +136,62 @@ function AdminDashboard() {
 
         <div style={{ maxWidth: '1100px', margin: '40px auto', padding: '0 20px' }}>
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: '40px' }}>
-            <h2 style={{ fontSize: '36px', color: '#333', margin: '0 0 10px 0' }}>Live Orders Dashboard 📊</h2>
-            <p style={{ color: '#666', fontSize: '16px', margin: 0 }}>Manage and update customer orders in real-time.</p>
+            <h2 style={{ fontSize: '36px', color: '#333', margin: '0 0 10px 0' }}>Live Dashboard 📊</h2>
+            <p style={{ color: '#666', fontSize: '16px', margin: 0 }}>Business analytics and order management.</p>
           </motion.div>
 
+          {/* BUSINESS SUMMARY & CHART SECTION */}
+          {!loading && orders.length > 0 && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ display: 'flex', gap: '30px', marginBottom: '40px', flexWrap: 'wrap' }}>
+              {/* Stats Cards */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '8px solid #28a745' }}>
+                  <div>
+                    <p style={{ margin: 0, color: '#888', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase' }}>Total Revenue</p>
+                    <h3 style={{ margin: '5px 0 0 0', fontSize: '36px', color: '#333' }}>₹{totalRevenue}</h3>
+                  </div>
+                  <div style={{ fontSize: '40px' }}>💰</div>
+                </div>
+                <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '8px solid #007bff' }}>
+                  <div>
+                    <p style={{ margin: 0, color: '#888', fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase' }}>Total Orders</p>
+                    <h3 style={{ margin: '5px 0 0 0', fontSize: '36px', color: '#333' }}>{totalOrders} Pizzas</h3>
+                  </div>
+                  <div style={{ fontSize: '40px' }}>📦</div>
+                </div>
+              </div>
+              
+              {/* NATIVE Doughnut Chart (No library needed) */}
+              <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', width: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <p style={{ margin: '0 0 15px 0', color: '#555', fontWeight: 'bold' }}>Order Status Breakdown</p>
+                <div style={{ 
+                  width: '180px', 
+                  height: '180px', 
+                  borderRadius: '50%', 
+                  background: totalOrders === 0 ? '#eee' : conicGradient,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 'inset 0 0 10px rgba(0,0,0,0.1)'
+                }}>
+                  {/* The inner white circle to make it a Doughnut */}
+                  <div style={{ width: '110px', height: '110px', backgroundColor: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '24px' }}>🍕</span>
+                  </div>
+                </div>
+                {/* Legend */}
+                <div style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', color: '#555' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '10px', backgroundColor: '#ff9800', borderRadius: '50%' }}></span> Received</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '10px', backgroundColor: '#17a2b8', borderRadius: '50%' }}></span> Kitchen</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '10px', backgroundColor: '#6f42c1', borderRadius: '50%' }}></span> Out</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '10px', backgroundColor: '#28a745', borderRadius: '50%' }}></span> Delivered</div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ORDERS GRID */}
+          <h3 style={{ color: '#444', marginBottom: '20px', borderBottom: '2px solid #ddd', paddingBottom: '10px' }}>Recent Orders</h3>
           {loading ? (
             <div style={{ textAlign: 'center', fontSize: '18px', color: '#666', marginTop: '50px' }}>Loading live orders... 🔄</div>
           ) : orders.length === 0 ? (
@@ -158,10 +232,10 @@ function AdminDashboard() {
                     <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>
                       <div style={{ fontWeight: 'bold', color: '#444', marginBottom: '8px', fontSize: '14px' }}>🍕 Order Details:</div>
                       <div style={{ fontSize: '14px', color: '#555', lineHeight: '1.6' }}>
-                        <strong>Base:</strong> {order.pizzaDetails.base} <br/>
-                        <strong>Sauce:</strong> {order.pizzaDetails.sauce} <br/>
-                        <strong>Cheese:</strong> {order.pizzaDetails.cheese} <br/>
-                        <strong>Veggies:</strong> {order.pizzaDetails.veggies && order.pizzaDetails.veggies.length > 0 ? order.pizzaDetails.veggies.join(', ') : 'None'}
+                        <strong>Base:</strong> {order.pizzaDetails?.base || 'N/A'} <br/>
+                        <strong>Sauce:</strong> {order.pizzaDetails?.sauce || 'N/A'} <br/>
+                        <strong>Cheese:</strong> {order.pizzaDetails?.cheese || 'N/A'} <br/>
+                        <strong>Veggies:</strong> {order.pizzaDetails?.veggies && order.pizzaDetails.veggies.length > 0 ? order.pizzaDetails.veggies.join(', ') : 'None'}
                       </div>
                       <hr style={{ borderTop: '1px dashed #ccc', margin: '10px 0' }}/>
                       <div style={{ fontSize: '13px', color: '#666' }}>
