@@ -1,66 +1,65 @@
-# Oasis Infobyte Internship Projects
-Intern: Lalatendu Nilakantha Sahoo
-Track: Web Development & Designing
- 
-# 🍕 Oasis Pizza - Full Stack MERN Application
+# Oasis Pizza 🍕
 
-A premium, full-stack pizza delivery web application built with the MERN (MongoDB, Express, React, Node.js) stack. This project features a beautiful glassmorphism UI, seamless user authentication, and a dedicated real-time Admin Dashboard for order management.
+**Oasis Infobyte Internship Project (Level 3)**
+- **Intern:** Lalatendu Nilakantha Sahoo
+- **Track:** Web Development & Designing
 
-## 🚀 Features
+---
 
-### For Customers:
-*   **User Authentication:** Secure Login and Registration (JWT based).
-*   **Interactive Menu:** Browse delicious pizzas with dynamic UI components.
-*   **Cart & Checkout:** Add pizzas to the cart, review the order summary, and provide delivery details.
-*   **Payment Integration:** Supports Cash on Delivery (COD) and Online Payments (Simulated/Razorpay).
-*   **Order Tracking:** Dedicated "My Orders" page to track current status with color-coded badges.
+## Overview
+A full-stack pizza delivery web application built using the MERN stack. This project implements a complete e-commerce flow, from user authentication and custom pizza building to payment processing and an admin dashboard for order management.
 
-### For Administrators (Admin Panel):
-*   **Role-Based Access:** Secure route protection for Admin users.
-*   **Live Dashboard:** View all incoming orders in a grid layout.
-*   **Status Management:** Update order statuses in real-time (Order Received ➔ In the Kitchen ➔ Out for Delivery ➔ Delivered).
+## Live Links
+- **Frontend App:** [oasis-pizza-nine.vercel.app](https://oasis-pizza-nine.vercel.app)
+- **Backend API:** [oasis-pizza.onrender.com](https://oasis-pizza.onrender.com)
 
-## 💻 Tech Stack
-*   **Frontend:** React.js, React Router DOM, Framer Motion (for smooth animations), CSS3.
-*   **Backend:** Node.js, Express.js.
-*   **Database:** MongoDB & Mongoose.
-*   **Authentication & Security:** JSON Web Tokens (JWT), bcrypt.js, CORS.
-*   **Payment Gateway:** Razorpay API (Configured).
+## Core Features
 
-## 🛠️ Installation & Setup
+**Client-Side (User Profile):**
+- **JWT Authentication:** Secure login and registration flow.
+- **Custom Pizza Builder:** Dynamic step-by-step customization (base, sauce, cheese, toppings).
+- **Cart & Checkout:** State management for cart operations and order validation.
+- **Payment Gateway:** Razorpay API integration (Test mode) and Cash on Delivery (COD) options.
+- **Order Tracking:** User dashboard to track order status.
 
-**1. Clone the repository:**
-\`\`\`bash
-git clone https://github.com/lalatendu9938/OIBSIP.git
-\`\`\`
+**Admin Panel:**
+- **Role-Based Access Control (RBAC):** Protected routes exclusively for administrators.
+- **Order Management:** Live grid view of all active orders.
+- **Status Updates:** Update order lifecycle (Received -> In Kitchen -> Out for Delivery -> Delivered).
 
-**2. Setup Backend:**
-\`\`\`bash
+## Tech Stack
+- **Frontend:** React.js, React Router, Framer Motion, CSS3
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB, Mongoose
+- **Security:** bcrypt.js for password hashing, JWT for session management
+- **Payments:** Razorpay API
+
+## Local Setup
+
+### 1. Clone the repository
+```bash
+git clone [https://github.com/lalatendu9938/OIBSIP.git](https://github.com/lalatendu9938/OIBSIP.git)
+2. Backend Setup
+Bash
 cd server
 npm install
-\`\`\`
-*Create a `.env` file in the `server` directory and add the following:*
-\`\`\`env
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-RAZORPAY_KEY_ID=your_razorpay_key
-RAZORPAY_SECRET=your_razorpay_secret
-\`\`\`
-*Start the server:*
-\`\`\`bash
-npm run dev
-\`\`\`
+Create a .env file in the /server directory and configure the environment variables:
 
-**3. Setup Frontend:**
-\`\`\`bash
+Code snippet
+PORT=5000
+MONGO_URI=<your_mongodb_connection_string>
+JWT_SECRET=<your_jwt_secret>
+RAZORPAY_KEY_ID=<your_razorpay_key>
+RAZORPAY_SECRET=<your_razorpay_secret>
+Start the backend server:
+
+Bash
+npm run dev
+3. Frontend Setup
+Bash
 cd client
 npm install
 npm start
-\`\`\`
+The client will start running at http://localhost:3000.
 
-## 🌟 Application Preview
-*The frontend runs on `http://localhost:3000` and the backend server on `[https://oasis-pizza.onrender.com](https://oasis-pizza.onrender.com)`.*
-
----
-*Built with ❤️ by Lalatendu Nilakantha Sahoo*
+Developed by Lalatendu Nilakantha Sahoo
