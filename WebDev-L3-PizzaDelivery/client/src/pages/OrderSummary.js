@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-// Ye function Razorpay ki script ko dynamically load karega
 const loadScript = (src) => {
   return new Promise((resolve) => {
     const script = document.createElement('script');
@@ -25,7 +24,6 @@ function OrderSummary() {
   const toppingsPrice = (pizzaDetails?.veggies?.length || 0) * 30;
   const totalAmount = basePrice + toppingsPrice;
 
-  // Database mein order save karne ka function alag nikal liya
   const saveOrderToDatabase = async (user) => {
     try {
       const response = await fetch('https://oasis-pizza.onrender.com/api/orders', {
@@ -44,12 +42,10 @@ function OrderSummary() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log("Backend Error:", errorData);
         throw new Error(errorData.message || 'Failed to save order in DB');
       }
       return true;
     } catch (error) {
-      console.error("DB Save Error:", error);
       return false;
     }
   };
@@ -69,7 +65,6 @@ function OrderSummary() {
     const user = JSON.parse(storedUser);
 
     if (paymentMethod === 'online') {
-      // --- RAZORPAY ONLINE PAYMENT FLOW ---
       const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
       if (!res) {
         alert('Razorpay SDK failed to load. Are you offline?');
@@ -77,24 +72,22 @@ function OrderSummary() {
       }
 
       try {
-        // 1. Backend se Razorpay order ID mangwa
-        const result = await fetch('https://oasis-pizza.onrender.com/api/payment/razorpay', {
+        // YAHAN FIX KIYA HAI MAINEY 👇
+        const result = await fetch('https://oasis-pizza.onrender.com/api/orders/create-razorpay-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ amount: totalAmount })
         });
         const data = await result.json();
 
-        // 2. Razorpay ka popup khol
         const options = {
-  key: "rzp_test_TRWXl9Rp2YsTZX", // <-- Yahan apni nayi Key ID daal di
-  amount: data.amount,
+          key: "rzp_test_TRWXl9Rp2YsTZX",
+          amount: data.amount,
           currency: data.currency,
           name: "🍕 Oasis Pizza",
           description: "Premium Pizza Delivery",
           order_id: data.id,
           handler: async function (response) {
-            // 3. Payment Success hone ke baad hi Database mein order daalenge
             const isSaved = await saveOrderToDatabase(user);
             if (isSaved) {
               alert(`Payment Successful! Transaction ID: ${response.razorpay_payment_id}`);
@@ -108,7 +101,7 @@ function OrderSummary() {
             email: user.email || "",
           },
           theme: {
-            color: "#e63946", // Tera mast red color
+            color: "#e63946",
           },
         };
 
@@ -117,11 +110,9 @@ function OrderSummary() {
 
       } catch (error) {
         alert('Something went wrong opening Razorpay.');
-        console.log("Razorpay Flow Error:", error);
       }
 
     } else {
-      // --- CASH ON DELIVERY FLOW ---
       const isSaved = await saveOrderToDatabase(user);
       if (isSaved) {
         alert('Order Placed Successfully via Cash on Delivery! 🎉🛵');
@@ -145,7 +136,6 @@ function OrderSummary() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f9f6f0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
-      
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }} 
         animate={{ opacity: 1, scale: 1, y: 0 }} 
@@ -162,7 +152,6 @@ function OrderSummary() {
           overflow: 'hidden' 
         }}
       >
-        {/* Left Side: Pizza Image */}
         <div style={{ 
           flex: '1 1 400px', 
           backgroundImage: "url('https://images.unsplash.com/photo-1579684947550-22e945225d9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')", 
@@ -180,11 +169,7 @@ function OrderSummary() {
             </motion.p>
           </div>
         </div>
-
-        {/* Right Side: Checkout Form with Watermarks */}
         <div style={{ flex: '1 1 450px', padding: '40px', position: 'relative', overflow: 'hidden' }}>
-          
-          {/* Subtle Watermark Graphics */}
           <div style={{ position: 'absolute', top: '10%', right: '-10px', fontSize: '120px', opacity: 0.05, pointerEvents: 'none', transform: 'rotate(15deg)' }}>🧾</div>
           <div style={{ position: 'absolute', bottom: '20%', left: '-20px', fontSize: '140px', opacity: 0.04, pointerEvents: 'none', transform: 'rotate(-10deg)' }}>🛵</div>
           <div style={{ position: 'absolute', top: '50%', right: '10%', fontSize: '100px', opacity: 0.03, pointerEvents: 'none', transform: 'rotate(25deg)' }}>💳</div>
@@ -193,7 +178,6 @@ function OrderSummary() {
             <h2 style={{ margin: '0 0 20px 0', color: '#333', fontSize: '28px', borderBottom: '2px solid #eee', paddingBottom: '15px' }}>
               🧾 Order Summary
             </h2>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '25px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '16px', color: '#666', fontWeight: 'bold' }}>🥖 Base</span>
@@ -215,7 +199,6 @@ function OrderSummary() {
               </div>
             </div>
 
-            {/* Bill Block */}
             <div style={{ backgroundColor: 'rgba(248, 249, 250, 0.8)', padding: '20px', borderRadius: '12px', marginBottom: '25px', borderLeft: '6px solid #ff9800', backdropFilter: 'blur(5px)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: '#555' }}>
                 <span>Base Price</span>
@@ -232,7 +215,6 @@ function OrderSummary() {
               </div>
             </div>
 
-            {/* Address Input */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px', color: '#444' }}>📍 Delivery Address</label>
               <textarea 
@@ -245,7 +227,6 @@ function OrderSummary() {
               />
             </div>
 
-            {/* Payment Mode Selector */}
             <div style={{ marginBottom: '25px' }}>
               <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px', color: '#444' }}>💳 Select Payment Method</label>
               <div style={{ display: 'flex', gap: '15px' }}>
@@ -264,7 +245,6 @@ function OrderSummary() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <motion.button 
               whileHover={{ scale: 1.02, translateY: -2 }}
               whileTap={{ scale: 0.98 }}
@@ -294,7 +274,6 @@ function OrderSummary() {
             >
               ← Back to Menu
             </button>
-
           </div>
         </div>
       </motion.div>
